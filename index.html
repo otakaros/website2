@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="refresh" content="0; url=https://geodrona.cz">
+
 <title>geodrona.cz</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script>setTimeout(() => window.location.replace("https://geodrona.cz"), 3500);</script>
@@ -131,10 +131,11 @@
     display: flex; justify-content: space-between;
     font-size: 0.58rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 7px;
   }
-  .prog-track { height: 1px; background: rgba(255,255,255,0.06); }
+  .prog-track { height: 3px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
   .prog-fill {
-    height: 100%; background: var(--accent);
+    height: 3px; background: var(--accent);
     box-shadow: 0 0 8px var(--accent), 0 0 18px rgba(57,255,20,0.25);
+    width: 0;
     animation: fill 3s cubic-bezier(0.4,0,0.2,1) forwards;
   }
   @keyframes fill { from { width: 0; } to { width: 100%; } }
