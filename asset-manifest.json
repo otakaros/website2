@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.css": "/otakaros/vedlejsi_web/static/css/main.2c840c54.css",
-    "main.js": "/otakaros/vedlejsi_web/static/js/main.e2259554.js",
-    "index.html": "/otakaros/vedlejsi_web/index.html",
-    "main.2c840c54.css.map": "/otakaros/vedlejsi_web/static/css/main.2c840c54.css.map",
-    "main.e2259554.js.map": "/otakaros/vedlejsi_web/static/js/main.e2259554.js.map"
+    "main.css": "/static/css/main.2c840c54.css",
+    "main.js": "/static/js/main.e2259554.js",
+    "index.html": "/index.html",
+    "main.2c840c54.css.map": "/static/css/main.2c840c54.css.map",
+    "main.e2259554.js.map": "/static/js/main.e2259554.js.map"
   },
   "entrypoints": [
     "static/css/main.2c840c54.css",
