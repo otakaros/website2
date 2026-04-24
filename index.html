@@ -3,324 +3,236 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Geodeťák – rychlé geometrické plány, vytyčení hranic, katastr. Praha a celá ČR. Brzy spouštíme!">
-<title>Geodeťák – Geometrický plán, vytyčení hranic | Brzy spouštíme</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<title>geodrona.cz</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>setTimeout(() => window.location.replace("https://geodrona.cz"), 3500);</script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #100e0b;
-    --paper: #1a1610;
-    --accent: #e8a825;
-    --accent2: #c45c2a;
-    --text: #e8ddc8;
-    --muted: #6b5e46;
-    --line: rgba(232,168,37,0.12);
+    --bg: #03060a;
+    --accent: #39ff14;
+    --text: #cddfc4;
+    --muted: #3a5232;
   }
-  html, body { height: 100%; }
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'IBM Plex Mono', monospace;
-    min-height: 100vh;
-    overflow-x: hidden;
+    font-family: 'DM Mono', monospace;
+    height: 100vh;
+    overflow: hidden;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
   }
 
-  /* Blueprint graph paper */
-  .blueprint {
+  .topo {
     position: fixed; inset: 0; pointer-events: none;
-    background-image:
-      linear-gradient(var(--line) 1px, transparent 1px),
-      linear-gradient(90deg, var(--line) 1px, transparent 1px),
-      linear-gradient(rgba(232,168,37,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(232,168,37,0.04) 1px, transparent 1px);
-    background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
   }
+  .topo svg { width: 100%; height: 100%; }
 
-  /* Warm radial gradient center light */
-  .center-light {
-    position: fixed; inset: 0; pointer-events: none;
-    background: radial-gradient(ellipse 70% 70% at 50% 50%,
-      rgba(232,168,37,0.06) 0%,
-      rgba(196,92,42,0.03) 40%,
-      transparent 70%);
-  }
-
-  /* Vignette */
   .vignette {
-    position: fixed; inset: 0; pointer-events: none;
-    background: radial-gradient(ellipse 90% 90% at 50% 50%, transparent 40%, rgba(16,14,11,0.88) 100%);
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse 75% 75% at 50% 50%, transparent 35%, rgba(3,6,10,0.9) 100%);
+    pointer-events: none;
   }
 
-  /* Aged paper texture via pseudo noise */
-  .noise {
-    position: fixed; inset: 0; pointer-events: none; opacity: 0.04;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size: 200px 200px;
+  .glow {
+    position: fixed;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(57,255,20,0.06) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    pointer-events: none;
+    animation: breathe 5s ease-in-out infinite alternate;
+  }
+  @keyframes breathe {
+    from { opacity: 0.5; transform: translate(-50%,-50%) scale(1); }
+    to   { opacity: 1;   transform: translate(-50%,-50%) scale(1.15); }
   }
 
-  /* Corner text */
+  .scanline {
+    position: fixed; width: 100%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(57,255,20,0.1), transparent);
+    animation: scan 7s linear infinite;
+    pointer-events: none; z-index: 3;
+  }
+  @keyframes scan { from { top: -2px; } to { top: 100vh; } }
+
   .corner {
     position: fixed;
-    font-size: 0.55rem; color: rgba(232,168,37,0.15);
-    letter-spacing: 0.1em; line-height: 1.9; z-index: 5;
+    font-size: 0.58rem;
+    color: rgba(57,255,20,0.15);
+    letter-spacing: 0.09em;
+    line-height: 1.8; z-index: 5;
   }
   .c-tl { top: 20px; left: 22px; }
-  .c-tr { top: 20px; right: 22px; text-align: right; }
-  .c-bl { bottom: 20px; left: 22px; }
   .c-br { bottom: 20px; right: 22px; text-align: right; }
 
-  /* Container */
   .container {
     position: relative; z-index: 10;
-    width: 100%; max-width: 660px;
-    padding: 60px 32px;
-    text-align: center;
+    text-align: center; padding: 40px 32px;
   }
 
-  /* Pin icon */
   .icon {
-    width: 58px; height: 58px;
-    margin: 0 auto 30px;
-    animation: float 4s ease-in-out infinite;
-    filter: drop-shadow(0 0 12px rgba(232,168,37,0.45));
+    width: 62px; height: 62px;
+    margin: 0 auto 26px;
+    animation: floaty 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 12px rgba(57,255,20,0.55));
   }
-  @keyframes float {
+  @keyframes floaty {
     0%,100% { transform: translateY(0); }
-    50%      { transform: translateY(-8px); }
+    50%      { transform: translateY(-9px); }
   }
 
-  /* Badge */
-  .badge {
+  .chip {
     display: inline-flex; align-items: center; gap: 8px;
-    border: 1px solid rgba(232,168,37,0.2);
-    background: rgba(232,168,37,0.05);
+    border: 1px solid rgba(57,255,20,0.2);
+    background: rgba(57,255,20,0.04);
     border-radius: 3px;
-    padding: 4px 16px;
-    font-size: 0.6rem; letter-spacing: 0.18em; color: var(--accent);
-    margin-bottom: 22px;
-    animation: fadeUp 0.7s ease both;
+    padding: 4px 14px;
+    font-size: 0.6rem; letter-spacing: 0.2em; color: var(--accent);
+    margin-bottom: 18px;
+    animation: fadeUp 0.6s ease both;
   }
-  .badge-dot {
+  .chip-dot {
     width: 5px; height: 5px; background: var(--accent);
     border-radius: 50%; box-shadow: 0 0 5px var(--accent);
-    animation: blink 1.5s ease-in-out infinite;
+    animation: blink 1.2s ease-in-out infinite;
   }
-  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.12;} }
+  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.1; } }
 
-  /* Heading — serif display */
   h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(3.2rem, 9vw, 6rem);
-    font-weight: 900;
-    line-height: 0.92;
-    letter-spacing: -0.01em;
-    margin-bottom: 6px;
-    animation: fadeUp 0.7s ease 0.1s both;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 10vw, 7.5rem);
+    letter-spacing: 0.07em;
+    line-height: 0.9;
+    margin-bottom: 10px;
+    animation: fadeUp 0.6s ease 0.1s both;
   }
-  .h-geo { color: #fff; }
-  .h-ak  {
-    color: var(--accent);
-    text-shadow: 0 0 36px rgba(232,168,37,0.35);
-    font-style: italic;
-  }
-  .h-tld { color: var(--muted); font-size: 0.38em; font-style: normal; font-weight: 700; vertical-align: middle; letter-spacing: 0.08em; }
+  .g1 { color: #fff; }
+  .g2 { color: var(--accent); text-shadow: 0 0 28px rgba(57,255,20,0.4); }
+  .g3 { color: var(--muted); font-size: 0.42em; letter-spacing: 0.1em; vertical-align: middle; }
 
-  /* Services */
-  .services {
-    display: flex; align-items: center; justify-content: center;
-    flex-wrap: wrap; gap: 6px 14px;
-    margin-bottom: 40px;
-    animation: fadeUp 0.7s ease 0.2s both;
-  }
-  .stag { font-size: 0.65rem; letter-spacing: 0.07em; color: var(--muted); text-transform: uppercase; }
-  .sdot { width: 3px; height: 3px; background: var(--muted); border-radius: 50%; opacity: 0.35; }
-
-  /* Horizontal rule */
-  .rule {
-    width: 100%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(232,168,37,0.15), transparent);
-    margin-bottom: 32px;
-    animation: fadeUp 0.7s ease 0.25s both;
+  .sub {
+    font-size: 0.68rem; color: var(--muted);
+    letter-spacing: 0.16em; text-transform: uppercase;
+    margin-bottom: 42px;
+    animation: fadeUp 0.6s ease 0.2s both;
   }
 
-  /* Cards */
-  .cards {
-    display: grid; grid-template-columns: repeat(3,1fr); gap: 12px;
-    margin-bottom: 36px;
-    animation: fadeUp 0.7s ease 0.3s both;
+  .prog-wrap {
+    width: 280px; margin: 0 auto 26px;
+    animation: fadeUp 0.6s ease 0.3s both;
   }
-  .card {
-    background: rgba(232,168,37,0.04);
-    border: 1px solid rgba(232,168,37,0.1);
-    border-radius: 6px; padding: 16px 10px;
-    transition: border-color 0.2s, background 0.2s;
+  .prog-meta {
+    display: flex; justify-content: space-between;
+    font-size: 0.58rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 7px;
   }
-  .card:hover {
-    border-color: rgba(232,168,37,0.25);
-    background: rgba(232,168,37,0.07);
+  .prog-track { height: 3px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+  .prog-fill {
+    height: 3px; background: var(--accent);
+    box-shadow: 0 0 8px var(--accent), 0 0 18px rgba(57,255,20,0.25);
+    width: 0;
+    animation: fill 3s cubic-bezier(0.4,0,0.2,1) forwards;
   }
-  .card-val {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.35rem; font-weight: 700;
-    color: var(--accent); line-height: 1; margin-bottom: 5px;
-  }
-  .card-lbl { font-size: 0.58rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+  @keyframes fill { from { width: 0; } to { width: 100%; } }
 
-  .rule2 {
-    width: 100%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(232,168,37,0.1), transparent);
-    margin-bottom: 32px;
-    animation: fadeUp 0.7s ease 0.35s both;
-  }
-
-  /* CTA */
-  .cta-section { animation: fadeUp 0.7s ease 0.4s both; margin-bottom: 28px; }
-  .cta-lbl {
-    font-size: 0.65rem; color: var(--muted);
-    letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 16px;
-  }
-  .btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-
-  .btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    text-decoration: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.75rem; letter-spacing: 0.04em;
-    padding: 12px 22px; border-radius: 5px;
+  .link {
+    display: inline-flex; align-items: center; gap: 10px;
+    text-decoration: none; color: var(--text);
+    font-size: 0.72rem; letter-spacing: 0.06em;
+    padding: 10px 22px;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 3px;
     transition: all 0.2s;
+    animation: fadeUp 0.6s ease 0.4s both;
   }
-  .btn-gold {
-    background: var(--accent); color: #100e0b;
-    border: 1px solid var(--accent); font-weight: 500;
-    box-shadow: 0 0 20px rgba(232,168,37,0.2);
-  }
-  .btn-gold:hover {
-    background: #f0b82e;
-    box-shadow: 0 0 32px rgba(232,168,37,0.35);
+  .link:hover {
+    border-color: rgba(57,255,20,0.28);
+    color: var(--accent); background: rgba(57,255,20,0.04);
     transform: translateY(-2px);
   }
-  .btn-outline {
-    background: transparent; color: var(--text);
-    border: 1px solid rgba(255,255,255,0.09);
-    font-size: 0.68rem;
-  }
-  .btn-outline:hover {
-    border-color: rgba(232,168,37,0.25);
-    color: var(--accent); background: rgba(232,168,37,0.04);
-    transform: translateY(-2px);
-  }
-
-  /* Coming soon */
-  .coming { animation: fadeUp 0.7s ease 0.5s both; }
-  .coming-pill {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(196,92,42,0.07);
-    border: 1px solid rgba(196,92,42,0.18);
-    border-radius: 3px; padding: 6px 18px;
-    font-size: 0.62rem; letter-spacing: 0.1em; color: var(--accent2);
-  }
-
-  /* Region */
-  .region {
-    margin-top: 38px;
-    font-size: 0.58rem; color: rgba(232,168,37,0.12);
-    letter-spacing: 0.1em;
-    animation: fadeUp 0.7s ease 0.6s both;
-  }
+  .arr { transition: transform 0.2s; }
+  .link:hover .arr { transform: translateX(4px); }
 
   @keyframes fadeUp {
-    from { opacity:0; transform: translateY(16px); }
-    to   { opacity:1; transform: translateY(0); }
-  }
-
-  @media (max-width: 480px) {
-    h1 { font-size: 3rem; }
-    .cards { gap: 8px; }
-    .card-val { font-size: 1.1rem; }
-    .btn { font-size: 0.68rem; padding: 10px 16px; }
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 </style>
 </head>
 <body>
 
-<div class="blueprint"></div>
-<div class="center-light"></div>
-<div class="vignette"></div>
-<div class="noise"></div>
+<div class="topo">
+  <svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs><style>
+      .cl  { fill:none; stroke:rgba(57,255,20,0.07); stroke-width:0.8; }
+      .cl2 { fill:none; stroke:rgba(57,255,20,0.035); stroke-width:0.5; }
+    </style></defs>
+    <ellipse class="cl"  cx="600" cy="350" rx="70"  ry="45"/>
+    <ellipse class="cl2" cx="600" cy="350" rx="130" ry="88"/>
+    <ellipse class="cl"  cx="600" cy="350" rx="195" ry="136"/>
+    <ellipse class="cl2" cx="600" cy="350" rx="265" ry="190"/>
+    <ellipse class="cl"  cx="600" cy="350" rx="340" ry="248"/>
+    <ellipse class="cl2" cx="600" cy="350" rx="420" ry="310"/>
+    <ellipse class="cl"  cx="600" cy="350" rx="505" ry="375"/>
+    <ellipse class="cl2" cx="600" cy="350" rx="595" ry="445"/>
+    <ellipse class="cl"  cx="600" cy="350" rx="690" ry="518"/>
+    <ellipse class="cl2" cx="150" cy="100" rx="55"  ry="38"/>
+    <ellipse class="cl"  cx="150" cy="100" rx="105" ry="72"/>
+    <ellipse class="cl2" cx="150" cy="100" rx="160" ry="112"/>
+    <ellipse class="cl2" cx="1060" cy="600" rx="65" ry="44"/>
+    <ellipse class="cl"  cx="1060" cy="600" rx="125" ry="86"/>
+    <ellipse class="cl2" cx="1060" cy="600" rx="190" ry="130"/>
+    <line class="cl2" x1="0" y1="175" x2="1200" y2="175"/>
+    <line class="cl2" x1="0" y1="525" x2="1200" y2="525"/>
+    <line class="cl2" x1="300" y1="0"   x2="300" y2="700"/>
+    <line class="cl2" x1="900" y1="0"   x2="900" y2="700"/>
+    <g stroke="rgba(57,255,20,0.1)" stroke-width="0.8">
+      <line x1="297" y1="350" x2="303" y2="350"/>
+      <line x1="597" y1="172" x2="603" y2="172"/>
+      <line x1="897" y1="350" x2="903" y2="350"/>
+    </g>
+  </svg>
+</div>
 
-<span class="corner c-tl">49.8209° N<br>18.2625° E</span>
-<span class="corner c-tr">GEODEŤÁK<br>v1.0</span>
-<span class="corner c-bl">OSTRAVA · OPAVA</span>
-<span class="corner c-br">ČR · 2026</span>
+<div class="vignette"></div>
+<div class="glow"></div>
+<div class="scanline"></div>
+
+<span class="corner c-tl">49.8209° N · 18.2625° E<br>ALT 142m · OSTRAVA</span>
+<span class="corner c-br">SYS_REDIRECT<br>geodrona.cz</span>
 
 <div class="container">
-
   <div class="icon">
-    <svg viewBox="0 0 58 58" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M29 5C21.268 5 15 11.268 15 19C15 29.5 29 50 29 50C29 50 43 29.5 43 19C43 11.268 36.732 5 29 5Z"
-        fill="rgba(232,168,37,0.1)" stroke="#e8a825" stroke-width="1.3"/>
-      <circle cx="29" cy="19" r="6" fill="rgba(232,168,37,0.18)" stroke="#e8a825" stroke-width="1.3"/>
-      <line x1="29" y1="11" x2="29" y2="14.5" stroke="#e8a825" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
-      <line x1="29" y1="23.5" x2="29" y2="27" stroke="#e8a825" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
-      <line x1="21" y1="19" x2="24.5" y2="19" stroke="#e8a825" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
-      <line x1="33.5" y1="19" x2="37" y2="19" stroke="#e8a825" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
-      <circle cx="29" cy="19" r="2.2" fill="#e8a825"/>
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="22" y="22" width="20" height="20" rx="3" fill="rgba(57,255,20,0.1)" stroke="#39ff14" stroke-width="1.3"/>
+      <circle cx="32" cy="32" r="4" fill="#39ff14" opacity="0.9"/>
+      <line x1="22" y1="22" x2="10" y2="10" stroke="#39ff14" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="42" y1="22" x2="54" y2="10" stroke="#39ff14" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="22" y1="42" x2="10" y2="54" stroke="#39ff14" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="42" y1="42" x2="54" y2="54" stroke="#39ff14" stroke-width="1.2" stroke-linecap="round"/>
+      <ellipse cx="8"  cy="8"  rx="7" ry="2.5" fill="none" stroke="#39ff14" stroke-width="1" opacity="0.6" transform="rotate(-30 8 8)"/>
+      <ellipse cx="56" cy="8"  rx="7" ry="2.5" fill="none" stroke="#39ff14" stroke-width="1" opacity="0.6" transform="rotate(30 56 8)"/>
+      <ellipse cx="8"  cy="56" rx="7" ry="2.5" fill="none" stroke="#39ff14" stroke-width="1" opacity="0.5" transform="rotate(30 8 56)"/>
+      <ellipse cx="56" cy="56" rx="7" ry="2.5" fill="none" stroke="#39ff14" stroke-width="1" opacity="0.5" transform="rotate(-30 56 56)"/>
     </svg>
   </div>
 
-  <div class="badge"><span class="badge-dot"></span>SPUŠTĚNÍ 2026</div>
+  <div class="chip"><span class="chip-dot"></span>PŘESMĚROVÁNÍ</div>
 
-  <h1>
-    <span class="h-geo">GEODE</span><span class="h-ak">ŤÁK</span>
-  </h1>
+  <h1><span class="g1">GEO</span><span class="g2">DRONA</span><span class="g3">.cz</span></h1>
+  <p class="sub">Načítání destinace&hellip;</p>
 
-  <div class="services">
-    <span class="stag">Geometrický plán</span>
-    <span class="sdot"></span>
-    <span class="stag">Vytyčení hranic</span>
-    <span class="sdot"></span>
-    <span class="stag">Katastr</span>
+  <div class="prog-wrap">
+    <div class="prog-meta"><span>REDIRECT</span><span>geodrona.cz</span></div>
+    <div class="prog-track"><div class="prog-fill"></div></div>
   </div>
 
-  <div class="rule"></div>
-
-  <div class="cards">
-    <div class="card">
-      <div class="card-val">10 dní</div>
-      <div class="card-lbl">Termín</div>
-    </div>
-    <div class="card">
-      <div class="card-val">od 8 000</div>
-      <div class="card-lbl">Cena v Kč</div>
-    </div>
-    <div class="card">
-      <div class="card-val">celá ČR</div>
-      <div class="card-lbl">Pokrytí</div>
-    </div>
-  </div>
-
-  <div class="rule2"></div>
-
-  <div class="cta-section">
-    <p class="cta-lbl">Chcete cenovou nabídku již teď?</p>
-    <div class="btns">
-      <a href="tel:+420XXXXXXXXX" class="btn btn-gold">☎ Zavolat</a>
-      <a href="mailto:zakazky.geodetak@gmail.com" class="btn btn-outline">✉ zakazky.geodetak@gmail.com</a>
-    </div>
-  </div>
-
-  <div class="coming">
-    <span class="coming-pill">⚡ Web se připravuje — plné spuštění během roku 2026</span>
-  </div>
-
-  <div class="region">Ostrava · Opava · Praha · celá Česká republika</div>
-
+  <a href="https://geodrona.cz" class="link">Pokračovat ručně <span class="arr">→</span></a>
 </div>
 </body>
 </html>
